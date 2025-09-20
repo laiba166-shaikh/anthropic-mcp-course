@@ -8,5 +8,6 @@ dependencies = [
     "mcp>=1.11.0",
     "openai-agents>=0.1.0",
     "prompt-toolkit>=3.0.51",
+    "requests>=2.32.4",
     "uvicorn>=0.35.0",
 ]

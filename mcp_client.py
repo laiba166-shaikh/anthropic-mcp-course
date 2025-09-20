@@ -68,6 +68,15 @@ class MCPClient:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.cleanup()
 
+# ----------------------------------------------------------------------
+# MCP Lifecycle Overview:
+# This MCPClient class adheres to the MCP lifecycle for robust connection management.
+# - Initialization: The connect() method sets up the client session.
+# - Operation: Core functions like list_tools() and call_tool() enable tool invocations.
+# - Shutdown: The cleanup() method ensures the connection is gracefully closed.
+#
+# To test your implementation, run main.py to start the chat agent and see your tools in action.
+# ----------------------------------------------------------------------
 
 # For testing
 async def main():
