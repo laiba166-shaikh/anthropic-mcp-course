@@ -1,5 +1,7 @@
 import sys
 import asyncio
+import json
+from pydantic import AnyUrl
 from typing import Optional, Any
 from contextlib import AsyncExitStack
 from mcp import ClientSession, types
@@ -52,10 +54,30 @@ class MCPClient:
     async def get_prompt(self, prompt_name, args: dict[str, str]):
         # TODO: Get a particular prompt defined by the MCP server
         return []
+    
+    async def list_resources(self)-> list[types.Resource]:
+        assert self._session, "Session not available."
+        result: types.ListResourcesResult = await self.session().list_resources()
+        return result.resources
+    
+    async def list_resource_templates(self) -> list[types.ResourceTemplate]:
+        assert self._session, "Session not available."
+        result: types.ListResourceTemplatesResult = await self.session().list_resource_templates()
+        return result.resourceTemplates
+    
+    async def read_resource(self, uri:str)-> types.ReadResourceResult:
+        assert self._session, "Session not available."
+        result = await self.session().read_resource(AnyUrl(uri))
+        resource = result.contents[0]
 
-    async def read_resource(self, uri: str) -> Any:
-        # TODO: Read a resource, parse the contents and return it
-        return []
+        if isinstance(resource, types.TextResourceContents):
+            if resource.mimeType == 'application/json':
+                try:
+                    return json.loads(resource.text)
+                except json.JSONDecodeError as e:
+                    print(f"Error decoding JSON: {e}")  
+        
+        return resource.text
 
     async def cleanup(self):
         await self._exit_stack.aclose()
@@ -83,13 +105,33 @@ async def main():
     async with MCPClient(
         server_url="http://localhost:8000/mcp/",
     ) as _client:
-        print("\n List Tools")
-        tools_list = await _client.list_tools()
-        print(tools_list)
-        print("\n==================================")
-        print("\n Call Read Document Tool")
-        doc_content= await _client.call_tool('read_doc_content', {'doc_id':'report.pdf'})
-        print(doc_content)
+        # print("\n List Tools")
+        # tools_list = await _client.list_tools()
+        # print(tools_list)
+        # print("\n==================================")
+        # print("\n Call Read Document Tool")
+        # doc_content= await _client.call_tool('read_doc_content', {'doc_id':'report.pdf'})
+        # print(doc_content)
+
+        # Resources
+        resources = await _client.list_resources()
+        print(resources[0].uri, " resources")
+
+        # data = await _client.read_resource(resources[0].uri)
+        # print(data, " data")
+
+        # multiple static resources
+        # for r in resources:
+        #     print(f"Resource URI: {r.uri}")
+        #     data = await _client.read_resource(r.uri)
+        #     print(f"Data: {data}")
+
+        # template = await _client.list_resource_templates()
+        # print('templates: ', template)
+        # intro_uri = template[0].uriTemplate.replace("{doc_id}", "spec.txt")
+        # data = await _client.read_resource(intro_uri)
+        # print("Intro Document:", data)
+
 
 
 if __name__ == "__main__":

@@ -28,7 +28,16 @@ def update_doc(doc_id: str, content: str) -> str:
     return "Successfully updated the document"
 
 # TODO: Write a resource to return all doc id's
+@mcp.resource("docs://documents", mime_type='application/json')
+def list_docs()-> list[str]:
+    return list(docs.keys())
+
 # TODO: Write a resource to return the contents of a particular doc
+# template resource
+@mcp.resource('docs://{doc_id}', mime_type='text/plain')
+def get_doc(doc_id: str)-> str:
+    return docs[doc_id]
+
 # TODO: Write a prompt to rewrite a doc in markdown format
 # TODO: Write a prompt to summarize a doc
 
